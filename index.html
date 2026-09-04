@@ -85,6 +85,10 @@
     border-radius: 8px; font-size: 0.95rem; transition: box-shadow 0.15s;
   }
   #search:focus { outline: none; box-shadow: 0 0 0 3px rgba(245,163,0,0.18); border-color: var(--orange); }
+  #chef-filter {
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 0.9rem; background: white; color: var(--dark); min-width: 200px;
+  }
   button {
     background: var(--orange); color: white; border: none; padding: 10px 18px;
     border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
@@ -222,6 +226,7 @@
 
 <div class="toolbar">
   <input id="search" type="text" placeholder="Rechercher un rayon, une section, un thème, un produit, un fournisseur, un commentaire...">
+  <select id="chef-filter"><option value="">Tous les chefs de file</option></select>
   <button class="secondary" onclick="expandAll()">Tout déplier</button>
   <button class="secondary" onclick="collapseAll()">Tout replier</button>
   <button onclick="exportCSV()">Exporter en CSV</button>
@@ -357,6 +362,8 @@ function renderAll(data) {
   if (editUnlocked) {
     document.querySelectorAll('.locked-field').forEach(el => { el.contentEditable = 'true'; });
   }
+  populateChefFilter();
+  applyFilters();
 }
 
 function collectData() {
@@ -391,26 +398,45 @@ function collectData() {
   return data;
 }
 
-document.getElementById('search').addEventListener('input', (e) => {
-  const q = e.target.value.trim().toLowerCase();
+function populateChefFilter() {
+  const select = document.getElementById('chef-filter');
+  const current = select.value;
+  const names = new Set();
+  document.querySelectorAll('.chef-field').forEach(el => {
+    const v = el.textContent.trim();
+    if (v) names.add(v);
+  });
+  select.innerHTML = '<option value="">Tous les chefs de file</option>' +
+    [...names].sort((a, b) => a.localeCompare(b, 'fr')).map(n => `<option value="${n}">${n}</option>`).join('');
+  if ([...names].includes(current)) select.value = current;
+}
+
+function applyFilters() {
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const chefFilter = document.getElementById('chef-filter').value;
+
   document.querySelectorAll('.rayon-block').forEach(block => {
-    if (!q) {
-      block.classList.remove('hidden');
-      block.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('hidden'));
-      return;
-    }
     const rows = block.querySelectorAll('tbody tr');
-    let anyMatch = block.dataset.rayon.includes(q);
+    let anyMatch = !chefFilter && block.dataset.rayon.includes(q);
+
     rows.forEach(tr => {
+      const chefEl = tr.querySelector('.chef-field');
+      const chefVal = chefEl ? chefEl.textContent.trim() : '';
+      const matchesChef = !chefFilter || chefVal === chefFilter;
       const text = tr.innerText.toLowerCase();
-      const match = text.includes(q) || block.dataset.rayon.includes(q);
+      const matchesSearch = !q || text.includes(q) || block.dataset.rayon.includes(q);
+      const match = matchesChef && matchesSearch;
       tr.classList.toggle('hidden', !match);
       if (match) anyMatch = true;
     });
+
     block.classList.toggle('hidden', !anyMatch);
     if (anyMatch) block.querySelector('.rayon-body').classList.remove('collapsed');
   });
-});
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+document.getElementById('chef-filter').addEventListener('change', applyFilters);
 
 let saveTimer = null;
 let saveFailureCount = 0;
@@ -501,6 +527,10 @@ async function fetchSharedData() {
 container.addEventListener('input', (e) => {
   if (e.target.matches('[contenteditable="true"]')) {
     e.target.classList.toggle('field-filled', e.target.textContent.trim() !== '');
+    if (e.target.matches('.chef-field')) {
+      populateChefFilter();
+      applyFilters();
+    }
     scheduleSave();
   }
 });
