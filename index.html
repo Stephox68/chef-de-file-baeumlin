@@ -150,6 +150,9 @@
   .add-row-btn:hover { background: #FFF8EC; opacity: 1; }
   .locked-only { display: none; }
   .locked-field { cursor: default; }
+  .chef-field.field-filled { font-weight: 700; }
+  .periode-select.field-filled { font-weight: 700; }
+  .comment-field.field-filled { font-weight: 700; color: #C0392B; }
   body.unlocked .locked-only { display: inline-block; }
   body.unlocked .add-row-btn.locked-only { display: block; }
   .empty-row { color: #B8AF9E; font-style: italic; font-size: 0.85rem; padding: 14px 16px; }
@@ -269,7 +272,7 @@ function buildTable(items) {
   table.innerHTML = `<thead><tr>
       <th style="width:11%">Chef de file</th>
       <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
+      <th style="width:11%">Quand j'anticipe ?</th>
       <th style="width:19%">Exemple de produits</th>
       <th style="width:11%">Fournisseur</th>
       <th style="width:16%">Commentaire</th>
@@ -281,12 +284,12 @@ function buildTable(items) {
   function addRow(chef, theme, periode, produits, fournisseur, commentaire) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td data-label="Chef de file"><span class="locked-field" contenteditable="false" data-placeholder="Nom...">${chef || ''}</span></td>
+      <td data-label="Chef de file"><span class="locked-field chef-field${chef ? ' field-filled' : ''}" contenteditable="false" data-placeholder="Nom...">${chef || ''}</span></td>
       <td data-label="Thème"><span class="locked-field" contenteditable="false" data-placeholder="Thème...">${theme || ''}</span></td>
-      <td data-label="Semaine"><select class="periode-select">${buildPeriodeSelect(periode)}</select></td>
+      <td data-label="Quand j'anticipe ?"><select class="periode-select${periode ? ' field-filled' : ''}">${buildPeriodeSelect(periode)}</select></td>
       <td data-label="Exemple de produits"><span class="locked-field" contenteditable="false" data-placeholder="Produits...">${produits || ''}</span></td>
       <td data-label="Fournisseur"><span class="locked-field" contenteditable="false" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
-      <td data-label="Commentaire"><span contenteditable="true" data-placeholder="Commentaire...">${commentaire || ''}</span></td>
+      <td data-label="Commentaire"><span class="comment-field${commentaire ? ' field-filled' : ''}" contenteditable="true" data-placeholder="Commentaire...">${commentaire || ''}</span></td>
       <td data-label="Rappel agenda">
         <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
         <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
@@ -496,10 +499,16 @@ async function fetchSharedData() {
 
 // Save on any edit (event delegation) — debounced
 container.addEventListener('input', (e) => {
-  if (e.target.matches('[contenteditable="true"]')) scheduleSave();
+  if (e.target.matches('[contenteditable="true"]')) {
+    e.target.classList.toggle('field-filled', e.target.textContent.trim() !== '');
+    scheduleSave();
+  }
 });
 container.addEventListener('change', (e) => {
-  if (e.target.matches('select.periode-select')) scheduleSave();
+  if (e.target.matches('select.periode-select')) {
+    e.target.classList.toggle('field-filled', e.target.value !== '');
+    scheduleSave();
+  }
 });
 
 const EDIT_PASSWORD = "stephox";
@@ -561,7 +570,7 @@ function createGoogleReminder(btn) {
   const info = getRowInfo(btn);
   const title = `Préparation ${info.rayon} – ${info.theme} (${info.chef})`;
   const details = `Rappel de préparation — Rayon : ${info.rayon} / Thème : ${info.theme} / Chef de file : ${info.chef}.`
-    + (info.periode ? ` Semaine de préparation : ${info.periode}.` : ' Aucune semaine sélectionnée : choisissez une semaine dans la colonne "Semaine".');
+    + (info.periode ? ` Semaine de préparation : ${info.periode}.` : " Aucune semaine sélectionnée : choisissez une semaine dans la colonne « Quand j'anticipe ? ».");
   const start = dateFromPeriode(info.periode);
   const end = addDays(start, 1);
   const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
