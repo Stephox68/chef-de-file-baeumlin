@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="fr"><head>
+<html lang="fr">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chef de File – Groupe Baeumlin</title>
@@ -56,6 +57,20 @@
     margin-top: 1px;
   }
   .rule { height: 4px; background: var(--orange); border-radius: 2px; margin-bottom: 14px; }
+  .sync-bar {
+    display: flex; align-items: center; gap: 10px; font-size: 0.78rem; color: #8A7F68;
+    margin-bottom: 18px; flex-wrap: wrap;
+  }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #3F8F5F; display: inline-block; }
+  .sync-dot.saving { background: var(--orange); }
+  .sync-dot.error { background: #C0392B; }
+  .save-warning {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: #FBE9E7; border: 1px solid #E8A79C; color: #8B3A2E; padding: 10px 16px;
+    border-radius: 8px; font-size: 0.85rem; margin-bottom: 14px;
+  }
+  .save-warning button { background: #C0392B; flex-shrink: 0; }
+  .save-warning button:hover { background: #A5301F; opacity: 1; }
   .missions {
     background: white; border: 1px solid var(--border); border-radius: 12px;
     padding: 18px 22px; margin-bottom: 22px; box-shadow: 0 2px 10px rgba(60,45,10,0.05);
@@ -147,10 +162,16 @@
 </div>
 <div class="rule"></div>
 
+<div class="sync-bar">
+  <span class="sync-dot" id="sync-dot"></span>
+  <span id="sync-label">Chargement des données partagées...</span>
+  <button class="secondary" onclick="loadData()">↻ Actualiser</button>
+</div>
+
 <div class="missions">
   <h2>Mission du chef de file — 5 priorités</h2>
   <p style="font-size:0.9rem;margin:0 0 10px 0;">Sur son rayon, le chef de file est le référent unique pour les 4 magasins. Il porte 5 missions prioritaires :</p>
-  <div id="missions-list"><div class="mission-row"><b>1. Anticipation</b><span>Anticiper les besoins saisonniers, les tendances marché et les risques de rupture pour sécuriser l'approvisionnement des 4 magasins.</span></div><div class="mission-row"><b>2. Pertinence de l'offre</b><span>Garantir un assortiment adapté aux attentes clients et à la zone de chalandise de chaque magasin.</span></div><div class="mission-row"><b>3. Gamme commune</b><span>Harmoniser une base de gamme commune aux 4 magasins pour simplifier les achats et le merchandising.</span></div><div class="mission-row"><b>4. Communication</b><span>Être le relais d'information entre les magasins, les fournisseurs et le siège sur le thème.</span></div><div class="mission-row"><b>5. Centralisation</b><span>Centraliser les remontées terrain, les décisions gamme et les bonnes pratiques du réseau.</span></div></div>
+  <div id="missions-list"></div>
 </div>
 
 <div class="toolbar">
@@ -160,906 +181,16 @@
   <button onclick="exportCSV()">Exporter en CSV</button>
 </div>
 
-<div id="rayons-container"><div class="rayon-block" data-rayon="outillage"><div class="rayon-header"><span>Outillage</span><span class="count">4 thème(s) ▾</span></div><div class="rayon-body"><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Accessoires électroportatifs</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Forets, abrasifs</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Hivernage</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Recharge de gaz, dégivrant, raclette à vitre</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Opération Fête des Pères / Noël</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Électroportatif (dynamique commerciale globale)</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Makita</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">test</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="chauffage, combustible et déneigement"><div class="rayon-header"><span>Chauffage, combustible et déneigement</span><span class="count">à compléter ▾</span></div><div class="rayon-body"><div class="empty-row">Aucun sous-thème pour ce rayon pour le moment.</div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="luminaire et décoration"><div class="rayon-header"><span>Luminaire et décoration</span><span class="count">8 thème(s) ▾</span></div><div class="rayon-body"><div class="section-header"><span>Hiver</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Présaison illumination de Noël</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Plaid</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Rideau thermique</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Galette et coussin</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div class="section-header"><span>Été</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Ventilateur de plafond</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Présaison solaire</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Voilage</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">[à confirmer : « boutique Gigia », été ou hiver ?]</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="bâti"><div class="rayon-header"><span>Bâti</span><span class="count">2 thème(s) ▾</span></div><div class="rayon-body"><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Isolation</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Laine de verre, laine de roche, laine de bois, polystyrène, isolant porte de garage, isolant mince alu</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Appro au camion</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">FIMACO, Comafranc, Penez, Pradier, Etex, Sedpa, Onduline</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="motoculture"><div class="rayon-header"><span>Motoculture</span><span class="count">4 thème(s) ▾</span></div><div class="rayon-body"><div class="section-header"><span>Hiver</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Pré-saison printemps / hiver</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">Stihl, Weldom</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div class="section-header"><span>Été</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Accessoires entretien moteur</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Huiles, jerricans, etc.</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">F1</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Tondeuses robots</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">Worx</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Gamme Ryobi</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">Ryobi</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="jardin, aménagement extérieur"><div class="rayon-header"><span>Jardin, aménagement extérieur</span><span class="count">26 thème(s) ▾</span></div><div class="rayon-body"><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Bois traité</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">Cerland</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Clôtures / brise-vue / grillage</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Récupération d'eau</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">Eda, Graf</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Terreau</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div class="section-header"><span>Hiver</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Sel de déneigement</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Voile d'hivernage</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Paillage</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Taillanderie</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Zolux</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Raticide</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div class="section-header"><span>Été</span><span class="section-fourn">Fournisseurs : Jardinor, Soergen, Vilmorin, Gardena</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Micro-irrigation</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Anti-nuisibles</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Gazon</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Engrais</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Sacs à déchets</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Plasticulture</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Arrosoirs</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Housses textiles</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">NHP (nettoyeurs haute pression)</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Pompes</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Géotextile</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Outils de jardin</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Gants</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Phyto</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Semences</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Pulvérisateurs</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="plein air"><div class="rayon-header"><span>Plein air</span><span class="count">à compléter ▾</span></div><div class="rayon-body"><div class="empty-row">Aucun sous-thème pour ce rayon pour le moment.</div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="plomberie"><div class="rayon-header"><span>Plomberie</span><span class="count">4 thème(s) ▾</span></div><div class="rayon-body"><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Adoucisseurs</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Climatube</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Raccords PVC pression piscine</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Robinetterie de bâtiment</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Vanne à bille</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="sol"><div class="rayon-header"><span>Sol</span><span class="count">2 thème(s) ▾</span></div><div class="rayon-body"><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Déstockage carrelage</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Déstockage stratifié</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="électricité"><div class="rayon-header"><span>Électricité</span><span class="count">3 thème(s) ▾</span></div><div class="rayon-body"><div class="section-header"><span>Hiver</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Illumination de Noël</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Piles, programmateur [terme à confirmer : « bipit »]</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Hiver (sécurité)</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Détecteur de fumée</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div class="section-header"><span>Été</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Départ en vacances</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Caméra, câble souterrain extérieur (?), prise extérieure, rallonge de jardin</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div><div class="rayon-block" data-rayon="quincaillerie"><div class="rayon-header"><span>Quincaillerie</span><span class="count">6 thème(s) ▾</span></div><div class="rayon-body"><div class="section-header"><span>Été</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Départ en vacances</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Sangles</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Déménagement (+ rentrée scolaire)</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Cartons, film étirable (?), scotchs, marqueurs</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div class="section-header"><span>Hiver</span></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Sécuriser sa maison</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Boîtes à clés, cadenas</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div><div><table><thead><tr>
-      <th style="width:11%">Chef de file</th>
-      <th style="width:15%">Thème</th>
-      <th style="width:9%">Semaine</th>
-      <th style="width:19%">Exemple de produits</th>
-      <th style="width:11%">Fournisseur</th>
-      <th style="width:16%">Commentaire</th>
-      <th style="width:12%">Rappel agenda</th>
-      <th style="width:4%"></th>
-    </tr></thead><tbody><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">[thème à confirmer]</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Produits chimiques (entretien ?)</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">Boîte aux lettres</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr><tr>
-      <td><span contenteditable="true" data-placeholder="Nom..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">[à confirmer : « faravin »] Rangement</span></td>
-      <td><select class="periode-select"><option value="">—</option><option value="S01">S01</option><option value="S02">S02</option><option value="S03">S03</option><option value="S04">S04</option><option value="S05">S05</option><option value="S06">S06</option><option value="S07">S07</option><option value="S08">S08</option><option value="S09">S09</option><option value="S10">S10</option><option value="S11">S11</option><option value="S12">S12</option><option value="S13">S13</option><option value="S14">S14</option><option value="S15">S15</option><option value="S16">S16</option><option value="S17">S17</option><option value="S18">S18</option><option value="S19">S19</option><option value="S20">S20</option><option value="S21">S21</option><option value="S22">S22</option><option value="S23">S23</option><option value="S24">S24</option><option value="S25">S25</option><option value="S26">S26</option><option value="S27">S27</option><option value="S28">S28</option><option value="S29">S29</option><option value="S30">S30</option><option value="S31">S31</option><option value="S32">S32</option><option value="S33">S33</option><option value="S34">S34</option><option value="S35">S35</option><option value="S36">S36</option><option value="S37">S37</option><option value="S38">S38</option><option value="S39">S39</option><option value="S40">S40</option><option value="S41">S41</option><option value="S42">S42</option><option value="S43">S43</option><option value="S44">S44</option><option value="S45">S45</option><option value="S46">S46</option><option value="S47">S47</option><option value="S48">S48</option><option value="S49">S49</option><option value="S50">S50</option><option value="S51">S51</option><option value="S52">S52</option><option value="S53">S53</option></select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">Rangement câble, casiers à bouteilles</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur..."></span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire..."></span></td>
-      <td>
-        <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
-        <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
-      </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
-    </tr></tbody></table><button class="add-row-btn">+ Ajouter une ligne</button></div></div></div></div>
+<div id="rayons-container"></div>
 <button id="add-rayon-btn" class="secondary" style="margin-bottom:12px;">+ Ajouter un rayon</button>
 <button id="export-page-btn" style="margin-bottom:20px;">💾 Télécharger la page mise à jour</button>
 
-<footer>Édition locale : cliquez « Télécharger la page mise à jour » après vos modifications, puis remplacez index.html sur GitHub.</footer>
+<footer>Toutes les modifications (chef de file, thème, semaine, produits, fournisseur, commentaire) sont enregistrées automatiquement et partagées avec tous ceux qui ouvrent ce lien.</footer>
 
-<script type="application/json" id="rayons-data">[["Outillage",[[null,null,[["","Accessoires électroportatifs","","Forets, abrasifs","",""],["","Hivernage","","Recharge de gaz, dégivrant, raclette à vitre","",""],["","Opération Fête des Pères / Noël","","","",""],["","Électroportatif (dynamique commerciale globale)","","Makita","",""],["","test","","","",""]]]]],["Chauffage, combustible et déneigement",[[null,null,[]]]],["Luminaire et décoration",[["HIVER",null,[["","Présaison illumination de Noël","","","",""],["","Plaid","","","",""],["","Rideau thermique","","","",""],["","Galette et coussin","","","",""]]],["ÉTÉ",null,[["","Ventilateur de plafond","","","",""],["","Présaison solaire","","","",""],["","Voilage","","","",""],["","[à confirmer : « boutique Gigia », été ou hiver ?]","","","",""]]]]],["Bâti",[[null,null,[["","Isolation","","Laine de verre, laine de roche, laine de bois, polystyrène, isolant porte de garage, isolant mince alu","",""],["","Appro au camion","","","FIMACO, Comafranc, Penez, Pradier, Etex, Sedpa, Onduline",""]]]]],["Motoculture",[["HIVER",null,[["","Pré-saison printemps / hiver","","","Stihl, Weldom",""]]],["ÉTÉ",null,[["","Accessoires entretien moteur","","Huiles, jerricans, etc.","F1",""],["","Tondeuses robots","","","Worx",""],["","Gamme Ryobi","","","Ryobi",""]]]]],["Jardin, aménagement extérieur",[[null,null,[["","Bois traité","","","Cerland",""],["","Clôtures / brise-vue / grillage","","","",""],["","Récupération d'eau","","","Eda, Graf",""],["","Terreau","","","",""]]],["HIVER",null,[["","Sel de déneigement","","","",""],["","Voile d'hivernage","","","",""],["","Paillage","","","",""],["","Taillanderie","","","",""],["","Zolux","","","",""],["","Raticide","","","",""]]],["ÉTÉ",null,[["","Micro-irrigation","","","",""],["","Anti-nuisibles","","","",""],["","Gazon","","","",""],["","Engrais","","","",""],["","Sacs à déchets","","","",""],["","Plasticulture","","","",""],["","Arrosoirs","","","",""],["","Housses textiles","","","",""],["","NHP (nettoyeurs haute pression)","","","",""],["","Pompes","","","",""],["","Géotextile","","","",""],["","Outils de jardin","","","",""],["","Gants","","","",""],["","Phyto","","","",""],["","Semences","","","",""],["","Pulvérisateurs","","","",""]]]]],["Plein air",[[null,null,[]]]],["Plomberie",[[null,null,[["","Adoucisseurs","","","",""],["","Climatube","","","",""],["","Raccords PVC pression piscine","","","",""],["","Robinetterie de bâtiment","","Vanne à bille","",""]]]]],["Sol",[[null,null,[["","Déstockage carrelage","","","",""],["","Déstockage stratifié","","","",""]]]]],["Électricité",[["HIVER",null,[["","Illumination de Noël","","Piles, programmateur [terme à confirmer : « bipit »]","",""],["","Hiver (sécurité)","","Détecteur de fumée","",""]]],["ÉTÉ",null,[["","Départ en vacances","","Caméra, câble souterrain extérieur (?), prise extérieure, rallonge de jardin","",""]]]]],["Quincaillerie",[["ÉTÉ",null,[["","Départ en vacances","","Sangles","",""],["","Déménagement (+ rentrée scolaire)","","Cartons, film étirable (?), scotchs, marqueurs","",""]]],["HIVER",null,[["","Sécuriser sa maison","","Boîtes à clés, cadenas","",""],["","[thème à confirmer]","","Produits chimiques (entretien ?)","",""],["","Boîte aux lettres","","","",""],["","[à confirmer : « faravin »] Rangement","","Rangement câble, casiers à bouteilles","",""]]]]]]</script>
+<script type="application/json" id="rayons-data">[["Outillage", [[null, null, [["", "Accessoires électroportatifs", "", "Forets, abrasifs", "", ""], ["", "Hivernage", "", "Recharge de gaz, dégivrant, raclette à vitre", "", ""], ["", "Opération Fête des Pères / Noël", "", "", "", ""], ["", "Électroportatif (dynamique commerciale globale)", "", "Makita", "", ""]]]]], ["Chauffage, combustible et déneigement", [[null, null, [["", "", "", "", "", ""]]]]], ["Luminaire et décoration", [["Hiver", null, [["", "Présaison illumination de Noël", "", "", "", ""], ["", "Plaid", "", "", "", ""], ["", "Rideau thermique", "", "", "", ""], ["", "Galette et coussin", "", "", "", ""]]], ["Été", null, [["", "Ventilateur de plafond", "", "", "", ""], ["", "Présaison solaire", "", "", "", ""], ["", "Voilage", "", "", "", ""]]], [null, null, [["", "[à confirmer : « boutique Gigia », été ou hiver ?]", "", "", "", ""]]]]], ["Bâti", [[null, null, [["", "Isolation", "", "Laine de verre, laine de roche, laine de bois, polystyrène, isolant porte de garage, isolant mince alu", "", ""], ["", "Appro au camion", "", "", "FIMACO, Comafranc, Penez, Pradier, Etex, Sedpa, Onduline", ""]]]]], ["Motoculture", [["Hiver", null, [["", "Pré-saison printemps / hiver", "", "", "Stihl, Weldom", ""]]], ["Été", null, [["", "Accessoires entretien moteur", "", "Huiles, jerricans, etc.", "F1", ""], ["", "Tondeuses robots", "", "", "Worx", ""], ["", "Gamme Ryobi", "", "", "Ryobi", ""]]]]], ["Jardin, aménagement extérieur", [[null, null, [["", "Bois traité", "", "", "Cerland", ""], ["", "Clôtures / brise-vue / grillage", "", "", "", ""], ["", "Récupération d'eau", "", "", "Eda, Graf", ""], ["", "Terreau", "", "", "", ""]]], ["Hiver", null, [["", "Sel de déneigement", "", "", "", ""], ["", "Voile d'hivernage", "", "", "", ""], ["", "Paillage", "", "", "", ""], ["", "Taillanderie", "", "", "", ""], ["", "Zolux", "", "", "", ""], ["", "Raticide", "", "", "", ""]]], ["Été", "Jardinor, Soergen, Vilmorin, Gardena", [["", "Micro-irrigation", "", "", "", ""], ["", "Anti-nuisibles", "", "", "", ""], ["", "Gazon", "", "", "", ""], ["", "Engrais", "", "", "", ""], ["", "Sacs à déchets", "", "", "", ""], ["", "Plasticulture", "", "", "", ""], ["", "Arrosoirs", "", "", "", ""], ["", "Housses textiles", "", "", "", ""], ["", "NHP (nettoyeurs haute pression)", "", "", "", ""], ["", "Pompes", "", "", "", ""], ["", "Géotextile", "", "", "", ""], ["", "Outils de jardin", "", "", "", ""], ["", "Gants", "", "", "", ""], ["", "Phyto", "", "", "", ""], ["", "Semences", "", "", "", ""], ["", "Pulvérisateurs", "", "", "", ""]]]]], ["Plein air", [[null, null, [["", "", "", "", "", ""]]]]], ["Plomberie", [[null, null, [["", "Adoucisseurs", "", "", "", ""], ["", "Climatube", "", "", "", ""], ["", "Raccords PVC pression piscine", "", "", "", ""], ["", "Robinetterie de bâtiment", "", "Vanne à bille", "", ""]]]]], ["Sol", [[null, null, [["", "Déstockage carrelage", "", "", "", ""], ["", "Déstockage stratifié", "", "", "", ""]]]]], ["Électricité", [["Hiver", null, [["", "Illumination de Noël", "", "Piles, programmateur [terme à confirmer : « bipit »]", "", ""], ["", "Hiver (sécurité)", "", "Détecteur de fumée", "", ""]]], ["Été", null, [["", "Départ en vacances", "", "Caméra, câble souterrain extérieur (?), prise extérieure, rallonge de jardin", "", ""]]]]], ["Quincaillerie", [["Été", null, [["", "Départ en vacances", "", "Sangles", "", ""], ["", "Déménagement (+ rentrée scolaire)", "", "Cartons, film étirable (?), scotchs, marqueurs", "", ""]]], ["Hiver", null, [["", "Sécuriser sa maison", "", "Boîtes à clés, cadenas", "", ""]]], [null, null, [["", "[thème à confirmer]", "", "Produits chimiques (entretien ?)", "", ""], ["", "Boîte aux lettres", "", "", "", ""], ["", "[à confirmer : « faravin »] Rangement", "", "Rangement câble, casiers à bouteilles", "", ""]]]]]]</script>
 <script>
 const PRIORITIES = [["1. Anticipation", "Anticiper les besoins saisonniers, les tendances marché et les risques de rupture pour sécuriser l'approvisionnement des 4 magasins."], ["2. Pertinence de l'offre", "Garantir un assortiment adapté aux attentes clients et à la zone de chalandise de chaque magasin."], ["3. Gamme commune", "Harmoniser une base de gamme commune aux 4 magasins pour simplifier les achats et le merchandising."], ["4. Communication", "Être le relais d'information entre les magasins, les fournisseurs et le siège sur le thème."], ["5. Centralisation", "Centraliser les remontées terrain, les décisions gamme et les bonnes pratiques du réseau."]];
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxeXwK4NwPNO5pZCFKuYDmOPCyZOHF0ed4hmLspTamah_qchfNkCwtDhMUxupWO7Jx1/exec";
 const RAYONS_DEFAULT = JSON.parse(document.getElementById('rayons-data').textContent);
 
 const missionsList = document.getElementById('missions-list');
@@ -1071,6 +202,13 @@ PRIORITIES.forEach(([label, desc]) => {
 });
 
 const container = document.getElementById('rayons-container');
+const syncDot = document.getElementById('sync-dot');
+const syncLabel = document.getElementById('sync-label');
+
+function setSync(state, text) {
+  syncDot.className = 'sync-dot' + (state === 'saving' ? ' saving' : state === 'error' ? ' error' : '');
+  syncLabel.textContent = text;
+}
 
 function buildPeriodeSelect(selected) {
   let html = '<option value="">—</option>';
@@ -1109,7 +247,7 @@ function buildTable(items) {
         <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
         <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
       </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove();">✕</button></td>
+      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove(); scheduleSave();">✕</button></td>
     `;
     tbody.appendChild(tr);
   }
@@ -1123,7 +261,7 @@ function buildTable(items) {
   const addBtn = document.createElement('button');
   addBtn.className = 'add-row-btn';
   addBtn.textContent = '+ Ajouter une ligne';
-  addBtn.onclick = () => addRow('', '', '', '', '', '');
+  addBtn.onclick = () => { addRow('', '', '', '', '', ''); scheduleSave(); };
   wrapper.appendChild(addBtn);
 
   return wrapper;
@@ -1224,6 +362,99 @@ document.getElementById('search').addEventListener('input', (e) => {
   });
 });
 
+let saveTimer = null;
+let saveFailureCount = 0;
+let saveBlocked = false;
+
+function scheduleSave() {
+  if (saveBlocked) {
+    setSync('error', "Sauvegarde en pause — cliquez « Réessayer » dans le bandeau ci-dessus.");
+    return;
+  }
+  setSync('saving', 'Modification en cours...');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveData, 900);
+}
+
+async function saveData() {
+  try {
+    const data = collectData();
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    saveFailureCount = 0;
+    saveBlocked = false;
+    hideSaveWarning();
+    setSync('ok', 'Enregistré · partagé avec tous — ' + new Date().toLocaleTimeString('fr-FR'));
+  } catch (e) {
+    saveFailureCount++;
+    console.error('Échec de sauvegarde (' + saveFailureCount + ')', e);
+    setSync('error', "Erreur d'enregistrement — vos dernières modifications n'ont peut-être pas été partagées.");
+    if (saveFailureCount >= 2) {
+      saveBlocked = true;
+      showSaveWarning();
+    }
+  }
+}
+
+function showSaveWarning() {
+  let bar = document.getElementById('save-warning');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'save-warning';
+    bar.className = 'save-warning';
+    bar.innerHTML = `
+      <span>⚠ La sauvegarde partagée ne répond pas. Vos modifications restent visibles ici mais ne sont pas transmises aux autres pour le moment.</span>
+      <button class="secondary" id="save-retry-btn">Réessayer</button>
+    `;
+    document.body.insertBefore(bar, document.querySelector('.sync-bar'));
+    document.getElementById('save-retry-btn').addEventListener('click', () => {
+      saveFailureCount = 0;
+      saveData();
+    });
+  }
+}
+
+function hideSaveWarning() {
+  const bar = document.getElementById('save-warning');
+  if (bar) bar.remove();
+}
+
+function loadData() {
+  setSync('saving', 'Chargement des données partagées...');
+  fetchSharedData();
+}
+
+async function fetchSharedData() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length) {
+      renderAll(data);
+    } else {
+      renderAll(RAYONS_DEFAULT);
+      await saveData();
+    }
+    setSync('ok', 'À jour · partagé avec tous — ' + new Date().toLocaleTimeString('fr-FR'));
+  } catch (e) {
+    console.error(e);
+    renderAll(RAYONS_DEFAULT);
+    setSync('error', "Impossible de joindre la sauvegarde partagée — affichage local par défaut. Cliquez « Actualiser » pour réessayer.");
+  }
+}
+
+// Save on any edit (event delegation) — debounced
+container.addEventListener('input', (e) => {
+  if (e.target.matches('[contenteditable="true"]')) scheduleSave();
+});
+container.addEventListener('change', (e) => {
+  if (e.target.matches('select.periode-select')) scheduleSave();
+});
+
 function expandAll() { document.querySelectorAll('.rayon-body').forEach(b => b.classList.remove('collapsed')); }
 function collapseAll() { document.querySelectorAll('.rayon-body').forEach(b => b.classList.add('collapsed')); }
 
@@ -1314,6 +545,7 @@ document.getElementById('add-rayon-btn').addEventListener('click', () => {
   body.appendChild(buildTable([]));
   block.appendChild(body);
   container.appendChild(block);
+  scheduleSave();
 });
 
 document.getElementById('export-page-btn').addEventListener('click', () => {
@@ -1345,9 +577,8 @@ function exportCSV() {
   link.click();
 }
 
-renderAll(RAYONS_DEFAULT);
+loadData();
 </script>
 
-
-
-</body></html>
+</body>
+</html>
