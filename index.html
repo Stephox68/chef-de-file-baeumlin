@@ -151,6 +151,40 @@
   .empty-row { color: #B8AF9E; font-style: italic; font-size: 0.85rem; padding: 14px 16px; }
   .hidden { display: none !important; }
   footer { text-align: center; color: #B8AF9E; font-size: 0.75rem; margin-top: 24px; }
+
+  /* --- Mobile responsive --- */
+  @media (max-width: 720px) {
+    body { padding: 14px; }
+    h1 { font-size: 1.3rem; text-align: left; }
+    .brand-header { flex-wrap: wrap; gap: 10px; }
+    .brand-icon { height: 48px; width: 48px; }
+    .brand-wordmark { height: 40px; }
+    .missions { padding: 12px 14px; }
+    .mission-row { flex-direction: column; gap: 2px; }
+    .mission-row b { min-width: 0; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    #search { width: 100%; }
+    .sync-bar { font-size: 0.72rem; }
+
+    table, thead, tbody, tr { display: block; width: 100%; }
+    thead { display: none; }
+    tbody tr {
+      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px;
+      padding: 6px 10px; background: white !important;
+    }
+    tbody td {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; border-bottom: 1px solid #F3EDE0; padding: 8px 0; text-align: right;
+    }
+    tbody td:last-child { border-bottom: none; }
+    tbody td[data-label]:not([data-label=""])::before {
+      content: attr(data-label);
+      font-weight: 700; font-size: 0.72rem; text-transform: uppercase;
+      color: #8A7F68; text-align: left; flex-shrink: 0;
+    }
+    tbody td span[contenteditable], tbody td select { text-align: right; flex: 1; }
+    .row-reminder { width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -237,17 +271,17 @@ function buildTable(items) {
   function addRow(chef, theme, periode, produits, fournisseur, commentaire) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><span contenteditable="true" data-placeholder="Nom...">${chef || ''}</span></td>
-      <td><span contenteditable="true" data-placeholder="Thème...">${theme || ''}</span></td>
-      <td><select class="periode-select">${buildPeriodeSelect(periode)}</select></td>
-      <td><span contenteditable="true" data-placeholder="Produits...">${produits || ''}</span></td>
-      <td><span contenteditable="true" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
-      <td><span contenteditable="true" data-placeholder="Commentaire...">${commentaire || ''}</span></td>
-      <td>
+      <td data-label="Chef de file"><span contenteditable="true" data-placeholder="Nom...">${chef || ''}</span></td>
+      <td data-label="Thème"><span contenteditable="true" data-placeholder="Thème...">${theme || ''}</span></td>
+      <td data-label="Semaine"><select class="periode-select">${buildPeriodeSelect(periode)}</select></td>
+      <td data-label="Exemple de produits"><span contenteditable="true" data-placeholder="Produits...">${produits || ''}</span></td>
+      <td data-label="Fournisseur"><span contenteditable="true" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
+      <td data-label="Commentaire"><span contenteditable="true" data-placeholder="Commentaire...">${commentaire || ''}</span></td>
+      <td data-label="Rappel agenda">
         <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
         <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
       </td>
-      <td><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove(); scheduleSave();">✕</button></td>
+      <td data-label=""><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove(); scheduleSave();">✕</button></td>
     `;
     tbody.appendChild(tr);
   }
