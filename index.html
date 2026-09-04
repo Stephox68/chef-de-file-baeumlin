@@ -148,6 +148,10 @@
     border: 1px dashed var(--orange); padding: 6px 12px; font-size: 0.82rem; font-weight: 600;
   }
   .add-row-btn:hover { background: #FFF8EC; opacity: 1; }
+  .locked-only { display: none; }
+  .locked-field { cursor: default; }
+  body.unlocked .locked-only { display: inline-block; }
+  body.unlocked .add-row-btn.locked-only { display: block; }
   .empty-row { color: #B8AF9E; font-style: italic; font-size: 0.85rem; padding: 14px 16px; }
   .hidden { display: none !important; }
   footer { text-align: center; color: #B8AF9E; font-size: 0.75rem; margin-top: 24px; }
@@ -218,10 +222,11 @@
   <button class="secondary" onclick="expandAll()">Tout déplier</button>
   <button class="secondary" onclick="collapseAll()">Tout replier</button>
   <button onclick="exportCSV()">Exporter en CSV</button>
+  <button id="unlock-btn" class="secondary" onclick="unlockEditing()">🔒 Modifier</button>
 </div>
 
 <div id="rayons-container"></div>
-<button id="add-rayon-btn" class="secondary" style="margin-bottom:12px;">+ Ajouter un rayon</button>
+<button id="add-rayon-btn" class="secondary locked-only" style="margin-bottom:12px;">+ Ajouter un rayon</button>
 <button id="export-page-btn" style="margin-bottom:20px;">💾 Télécharger la page mise à jour</button>
 
 <footer>Toutes les modifications (chef de file, thème, semaine, produits, fournisseur, commentaire) sont enregistrées automatiquement et partagées avec tous ceux qui ouvrent ce lien.</footer>
@@ -276,17 +281,17 @@ function buildTable(items) {
   function addRow(chef, theme, periode, produits, fournisseur, commentaire) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td data-label="Chef de file"><span contenteditable="true" data-placeholder="Nom...">${chef || ''}</span></td>
-      <td data-label="Thème"><span contenteditable="true" data-placeholder="Thème...">${theme || ''}</span></td>
+      <td data-label="Chef de file"><span class="locked-field" contenteditable="false" data-placeholder="Nom...">${chef || ''}</span></td>
+      <td data-label="Thème"><span class="locked-field" contenteditable="false" data-placeholder="Thème...">${theme || ''}</span></td>
       <td data-label="Semaine"><select class="periode-select">${buildPeriodeSelect(periode)}</select></td>
-      <td data-label="Exemple de produits"><span contenteditable="true" data-placeholder="Produits...">${produits || ''}</span></td>
-      <td data-label="Fournisseur"><span contenteditable="true" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
+      <td data-label="Exemple de produits"><span class="locked-field" contenteditable="false" data-placeholder="Produits...">${produits || ''}</span></td>
+      <td data-label="Fournisseur"><span class="locked-field" contenteditable="false" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
       <td data-label="Commentaire"><span contenteditable="true" data-placeholder="Commentaire...">${commentaire || ''}</span></td>
       <td data-label="Rappel agenda">
         <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
         <a class="ics-link" title="Autre agenda (Outlook, etc.)" onclick="createIcsReminder(this)">ou .ics</a>
       </td>
-      <td data-label=""><button class="row-delete" title="Supprimer la ligne" onclick="this.closest('tr').remove(); scheduleSave();">✕</button></td>
+      <td data-label=""><button class="row-delete locked-only" title="Supprimer la ligne" onclick="this.closest('tr').remove(); scheduleSave();">✕</button></td>
     `;
     tbody.appendChild(tr);
   }
@@ -298,7 +303,7 @@ function buildTable(items) {
   wrapper.appendChild(table);
 
   const addBtn = document.createElement('button');
-  addBtn.className = 'add-row-btn';
+  addBtn.className = 'add-row-btn locked-only';
   addBtn.textContent = '+ Ajouter une ligne';
   addBtn.onclick = () => { addRow('', '', '', '', '', ''); scheduleSave(); };
   wrapper.appendChild(addBtn);
@@ -346,6 +351,9 @@ function renderAll(data) {
     block.appendChild(body);
     container.appendChild(block);
   });
+  if (editUnlocked) {
+    document.querySelectorAll('.locked-field').forEach(el => { el.contentEditable = 'true'; });
+  }
 }
 
 function collectData() {
@@ -493,6 +501,25 @@ container.addEventListener('input', (e) => {
 container.addEventListener('change', (e) => {
   if (e.target.matches('select.periode-select')) scheduleSave();
 });
+
+const EDIT_PASSWORD = "stephox";
+let editUnlocked = false;
+
+function unlockEditing() {
+  if (editUnlocked) return;
+  const pwd = prompt('Mot de passe pour modifier chef de file, thème, produits, fournisseur et les lignes/rayons :');
+  if (pwd === null) return;
+  if (pwd === EDIT_PASSWORD) {
+    editUnlocked = true;
+    document.body.classList.add('unlocked');
+    document.querySelectorAll('.locked-field').forEach(el => { el.contentEditable = 'true'; });
+    const btn = document.getElementById('unlock-btn');
+    btn.textContent = '🔓 Édition activée';
+    btn.disabled = true;
+  } else {
+    alert('Mot de passe incorrect.');
+  }
+}
 
 function expandAll() { document.querySelectorAll('.rayon-body').forEach(b => b.classList.remove('collapsed')); }
 function collapseAll() { document.querySelectorAll('.rayon-body').forEach(b => b.classList.add('collapsed')); }
