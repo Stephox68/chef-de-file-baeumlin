@@ -154,7 +154,7 @@
 
   /* --- Mobile responsive --- */
   @media (max-width: 720px) {
-    body { padding: 14px; }
+    body { padding: 14px; overflow-x: hidden; }
     h1 { font-size: 1.3rem; text-align: left; }
     .brand-header { flex-wrap: wrap; gap: 10px; }
     .brand-icon { height: 48px; width: 48px; }
@@ -175,7 +175,9 @@
     tbody td {
       display: flex; align-items: center; justify-content: space-between;
       gap: 10px; border-bottom: 1px solid #F3EDE0; padding: 8px 0; text-align: right;
+      min-width: 0;
     }
+    tbody td span[contenteditable] { word-break: break-word; }
     tbody td:last-child { border-bottom: none; }
     tbody td[data-label]:not([data-label=""])::before {
       content: attr(data-label);
@@ -183,7 +185,10 @@
       color: #8A7F68; text-align: left; flex-shrink: 0;
     }
     tbody td span[contenteditable], tbody td select { text-align: right; flex: 1; }
-    .row-reminder { width: 100%; }
+    tbody td[data-label="Rappel agenda"] { flex-direction: column; align-items: stretch; }
+    tbody td[data-label="Rappel agenda"]::before { text-align: left; margin-bottom: 6px; }
+    .row-reminder { width: 100%; box-sizing: border-box; white-space: normal; }
+    .ics-link { margin-top: 4px; }
   }
 </style>
 </head>
