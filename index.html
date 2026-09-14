@@ -402,12 +402,13 @@ function buildTable(items) {
 
   function addRow(chef, theme, periode, produits, fournisseur, commentaire) {
     const tr = document.createElement('tr');
+    const editable = editUnlocked ? 'true' : 'false';
     tr.innerHTML = `
-      <td data-label="Chef de file"><span class="locked-field chef-field${chef ? ' field-filled' : ''}" contenteditable="false" data-placeholder="Nom...">${chef || ''}</span></td>
-      <td data-label="Thème"><span class="locked-field" contenteditable="false" data-placeholder="Thème...">${theme || ''}</span></td>
+      <td data-label="Chef de file"><span class="locked-field chef-field${chef ? ' field-filled' : ''}" contenteditable="${editable}" data-placeholder="Nom...">${chef || ''}</span></td>
+      <td data-label="Thème"><span class="locked-field" contenteditable="${editable}" data-placeholder="Thème...">${theme || ''}</span></td>
       <td data-label="Quand j'anticipe ?"><select class="periode-select${periode ? ' field-filled' : ''}">${buildPeriodeSelect(periode)}</select></td>
-      <td data-label="Exemple de produits"><span class="locked-field" contenteditable="false" data-placeholder="Produits...">${produits || ''}</span></td>
-      <td data-label="Fournisseur"><span class="locked-field" contenteditable="false" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
+      <td data-label="Exemple de produits"><span class="locked-field" contenteditable="${editable}" data-placeholder="Produits...">${produits || ''}</span></td>
+      <td data-label="Fournisseur"><span class="locked-field" contenteditable="${editable}" data-placeholder="Fournisseur...">${fournisseur || ''}</span></td>
       <td data-label="Commentaire"><span class="comment-field${commentaire ? ' field-filled' : ''}" contenteditable="true" data-placeholder="Commentaire...">${commentaire || ''}</span></td>
       <td data-label="Rappel agenda">
         <button class="row-reminder" title="Ouvrir un événement pré-rempli dans Google Agenda" onclick="createGoogleReminder(this)">📅 Google Agenda</button>
